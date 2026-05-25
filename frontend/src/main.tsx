@@ -11,10 +11,6 @@ const runtimeUrl =
 const agentId =
   import.meta.env.VITE_COPILOT_AGENT_ID ?? "deepagent-demo";
 
-const bearerToken =
-  import.meta.env.API_BEARER_TOKEN;
-
-
 const threadId =
   localStorage.getItem("deepagent-thread-id") ??
   crypto.randomUUID();
@@ -24,15 +20,12 @@ localStorage.setItem("deepagent-thread-id", threadId);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <CopilotKit
-      runtimeUrl={runtimeUrl}
-      agent={agentId}
-      threadId={threadId}
-      showDevConsole={false}
-      enableInspector={false}
-      headers={{
-        Authorization: `Bearer ${bearerToken}`,
-      }}
-    >
+  runtimeUrl={runtimeUrl}
+  agent={agentId}
+  threadId={threadId}
+  showDevConsole={false}
+  enableInspector={false}
+>
       <App agentId={agentId} runtimeUrl={runtimeUrl} />
     </CopilotKit>
   </React.StrictMode>

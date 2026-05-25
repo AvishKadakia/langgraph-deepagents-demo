@@ -62,8 +62,6 @@ services:
     build:
       context: ./frontend
     container_name: deepagent-frontend
-    env_file:
-      - .env
     environment:
       VITE_COPILOT_RUNTIME_URL: http://localhost:${RUNTIME_PORT:-4000}/copilotkit
       VITE_AGENT_ID: ${AGENT_ID:-deepagent-demo}
