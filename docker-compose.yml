@@ -1,0 +1,76 @@
+services:
+  postgres:
+    build:
+      context: ./postgres
+    container_name: deepagent-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-deepagent}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - deepagent_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-deepagent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: deepagent-backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepagent}?sslmode=disable
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:4000,http://127.0.0.1:4000}
+      LANGGRAPH_STRICT_MSGPACK: "true"
+      OPENAI_MODEL: ${OPENAI_MODEL:-openai:gpt-4o-mini}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  runtime:
+    build:
+      context: ./runtime
+    container_name: deepagent-runtime
+    environment:
+      PORT: 4000
+      COPILOT_RUNTIME_PATH: /copilotkit
+      AGENT_ID: ${AGENT_ID:-deepagent-demo}
+      AGENT_URL: http://backend:8000/copilotkit
+      CORS_ORIGINS: ${RUNTIME_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    ports:
+      - "${RUNTIME_PORT:-4000}:4000"
+    depends_on:
+      - backend
+    volumes:
+      - ./runtime:/app
+      - /app/node_modules
+    command: npm run start
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: deepagent-frontend
+    environment:
+      VITE_COPILOT_RUNTIME_URL: http://localhost:${RUNTIME_PORT:-4000}/copilotkit
+      VITE_AGENT_ID: ${AGENT_ID:-deepagent-demo}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - runtime
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  deepagent_pgdata:

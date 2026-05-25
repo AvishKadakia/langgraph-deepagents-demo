@@ -1,0 +1,24 @@
+[project]
+name = "deepagent-copilotkit-agui-backend"
+version = "0.1.0"
+description = "FastAPI + LangGraph DeepAgent + CopilotKit AG-UI + Postgres checkpointer demo"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.34.0",
+  "pydantic-settings>=2.7.0",
+  "python-dotenv>=1.0.1",
+  "langchain>=1.0.0",
+  "langchain-core>=1.0.0",
+  "langchain-openai>=0.3.0",
+  "langgraph>=1.0.0",
+  "deepagents>=0.0.6",
+  "copilotkit>=0.1.0",
+  "ag-ui-langgraph[fastapi]>=0.0.36,<0.1.0",
+  "langgraph-checkpoint-postgres>=2.0.0",
+  "psycopg[binary]>=3.2.0",
+  "psycopg-pool>=3.2.0"
+]
+
+[tool.ruff]
+line-length = 100

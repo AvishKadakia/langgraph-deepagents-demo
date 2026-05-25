@@ -1,0 +1,20 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic-settings>=2.7.0
+python-dotenv>=1.0.1
+
+# LangGraph + Deep Agents
+langchain>=1.0.0
+langchain-core>=1.0.0
+langchain-openai>=0.3.0
+langgraph>=1.0.0
+deepagents>=0.0.6
+
+# CopilotKit / AG-UI bridge
+copilotkit>=0.1.0
+ag-ui-langgraph[fastapi]>=0.0.36,<0.1.0
+
+# Postgres checkpoint persistence
+langgraph-checkpoint-postgres>=2.0.0
+psycopg[binary]>=3.2.0
+psycopg-pool>=3.2.0
