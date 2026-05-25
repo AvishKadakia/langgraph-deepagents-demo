@@ -49,11 +49,16 @@ app.get("/health", (_req, res) => {
 });
 
 const serviceAdapter = new ExperimentalEmptyAdapter();
+const apiBearerToken = process.env.API_BEARER_TOKEN;
+
 
 const runtime = new CopilotRuntime({
   agents: {
     [agentId]: new LangGraphHttpAgent({
       url: agentUrl,
+      headers: apiBearerToken
+        ? { Authorization: `Bearer ${apiBearerToken}` }
+        : {},
     }),
   },
 });
