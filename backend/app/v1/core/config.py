@@ -3,8 +3,7 @@ import json
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
+ 
 class Settings(BaseSettings):
     """Runtime configuration for the demo backend.
 
@@ -15,25 +14,173 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     api_bearer_token: str = Field(
-        default="Bearer token for securing API routes.",
+        default="dev-token-change-me",
         alias="API_BEARER_TOKEN",
+        description="A token used to authenticate API requests. In production, use a secure, randomly generated token and keep it secret.",
     )
     app_name: str = "DeepAgent CopilotKit AG-UI Demo"
     agent_name: str = Field(default="deepagent-demo", alias="AGENT_NAME")
     agent_description: str = Field(
         default="A LangGraph DeepAgent demo exposed through CopilotKit AG-UI.",
         alias="AGENT_DESCRIPTION",
+        description="A brief description of the agent's purpose and capabilities.",
     )
     database_url: str = Field(
         default="postgresql://postgres:postgres@localhost:5432/deepagent?sslmode=disable",
         alias="DATABASE_URL",
     )
-    openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="openai:gpt-4o-mini", alias="OPENAI_MODEL")
+    openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY", description="The API key for authenticating with OpenAI. Required if OPENAI_MODEL is set.")
+    openai_model: str = Field(default="openai:gpt-5.4-mini", alias="OPENAI_MODEL", description="The model to use for OpenAI API requests.")
     cors_origins: str = Field(
         default="http://localhost:5173,http://127.0.0.1:5173",
         alias="CORS_ORIGINS",
     )
+
+    #Search Configs
+    ai_search_default_top_k: int = 15
+    filter_expression: str | None = None
+    context: str | None = None
+    access_token: str | None = None
+    use_semantic: bool = True
+    use_vector: bool = True
+    use_hybrid: bool = True
+    compose_chars_per_result: int = 2000
+    compose_total_char_budget: int = 16000
+
+    #Azure Openai Config
+    endpoint: str | None = Field(
+        default=None,
+        alias="AZURE_OPENAI_ENDPOINT",
+        agent_description="The base URL for the Azure OpenAI resource, e.g., https://my-resource.openai.azure.com/",
+    )
+    api_key: str | None = Field(
+        default=None,
+        alias="AZURE_OPENAI_API_KEY",
+        agent_description="The API key for authenticating with Azure OpenAI. Required if API_ENDPOINT is set.",
+    )
+    api_version: str = Field(
+        default="2024-02-01",
+        alias="AZURE_OPENAI_API_VERSION",
+        agent_description="The API version to use for Azure OpenAI requests.",
+    )
+    embedding_deployment: str | None = Field(
+        default=None,
+        alias=(
+            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+            or "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT"
+            or "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
+        ),
+        agent_description="The deployment name for the embedding model.",
+    )
+    chat_deployment: str | None = Field(
+        default=None,
+        alias=(
+            "AZURE_OPENAI_CHAT_DEPLOYMENT"
+            or "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
+        ),
+        agent_description="The deployment name for the chat model.",
+    )
+    use_managed_identity: bool = Field(
+        default=True,
+        alias="AZURE_OPENAI_USE_MANAGED_IDENTITY",
+        agent_description="Whether to use managed identity for Azure OpenAI authentication.",
+    )
+    fallback_enabled: bool = Field(
+        default=True,
+        alias="AZURE_OPENAI_FALLBACK_ENABLED",
+        agent_description="Whether to enable fallback for Azure OpenAI requests.",
+    )
+    fallback_dimensions: int = Field(
+        default=1536,
+        alias="AZURE_OPENAI_FALLBACK_DIMENSIONS",
+        agent_description="The dimensions for fallback embeddings.",
+    )
+    _azure_openai_scope = Field(
+        default="https://cognitiveservices.azure.com/.default",
+        alias="AZURE_OPENAI_SCOPE",
+        agent_description="The scope to use for Azure OpenAI authentication. Typically, this should not need to be changed unless you have a custom Azure setup.",
+    )
+
+    #Azure Search Config
+    azure_search_endpoint: str | None = Field(
+        default=None,
+        alias="AZURE_SEARCH_ENDPOINT",
+        agent_description="The endpoint URL for the Azure Search service, e.g., https://my-search.search.windows.net",
+    )
+    azure_search_api_key: str | None = Field(
+        default=None,
+        alias="AZURE_SEARCH_API_KEY",
+        agent_description="The API key for the Azure Search service."
+    )
+    azure_search_semantic_configuration: str | None = Field(
+        default=None,
+        alias="AZURE_SEARCH_SEMANTIC_CONFIGURATION",
+        agent_description="The name of the semantic configuration to use for Azure Search queries.",
+    )
+    azure_search_vector_field: str = Field(
+        default="content_vector",
+        alias="AZURE_SEARCH_VECTOR_FIELD",
+        agent_description="The name of the vector field in Azure Search indexes.",
+    )
+    azure_search_content_field: str = Field(
+        default="content",
+        alias="AZURE_SEARCH_CONTENT_FIELD",
+        agent_description="The name of the content field in Azure Search indexes.",
+    )
+    azure_search_title_field: str = Field(
+        default="title",
+        alias="AZURE_SEARCH_TITLE_FIELD",
+        agent_description="The name of the title field in Azure Search indexes.",
+    )
+    azure_search_id_field: str = Field(
+        default="id",
+        alias="AZURE_SEARCH_ID_FIELD",
+        agent_description="The name of the ID field in Azure Search indexes.",
+    )
+    azure_search_default_top_k: int = Field(
+        default=5,
+        alias="AZURE_SEARCH_TOP_K",
+        agent_description="The default number of search results to return for Azure Search queries.",
+    )
+    azure_search_request_timeout_seconds: float = Field(
+        default=20.0,
+        alias="AZURE_SEARCH_TIMEOUT_SECONDS",
+        agent_description="The timeout in seconds for Azure Search requests.",
+    )
+    azure_search_use_managed_identity: bool = Field(
+        default=True,
+        alias="AZURE_SEARCH_USE_MANAGED_IDENTITY",
+        agent_description="Whether to use managed identity for Azure Search authentication.",
+    )
+    azure_search_fallback_enabled: bool = Field(
+        default=True,
+        alias="AZURE_SEARCH_FALLBACK_ENABLED",
+        agent_description="Whether to enable fallback for Azure Search requests.",
+    )
+    azure_search_select_fields: tuple[str, ...] = Field(
+        default=tuple(
+        "id",
+        "chunk_id",
+        "title",
+        "document_title",
+        "source",
+        "source_url",
+        "url",
+        "file_name",
+        "content",
+        "chunk",
+        "text",
+        "x_trace_id",
+        ),
+        alias="AZURE_SEARCH_SELECT_FIELDS",
+        agent_description=(
+            "A comma-separated list of fields to select in Azure Search queries. "
+            "Defaults to 'id,title,content' which should be sufficient for most use cases. "
+            "You can add additional fields if your index contains useful metadata you want included in search results."
+        ),
+    )
+    
+
 
     @property
     def cors_origin_list(self) -> list[str]:
