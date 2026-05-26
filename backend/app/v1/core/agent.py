@@ -5,15 +5,15 @@ import logging
 from copilotkit import CopilotKitMiddleware
 from deepagents import create_deep_agent
 
-from backend.app.v1.utils.checkpointer import AsyncCheckpointerBundle, create_postgres_checkpointer
-from backend.app.v1.core.config import get_settings
-from backend.app.v1.core.tools import (
+from app.v1.utils.checkpointer import AsyncCheckpointerBundle, create_postgres_checkpointer
+from app.v1.core.config import get_settings
+from app.v1.core.tools import (
     add_demo_task,
     create_launch_checklist,
     list_demo_tasks,
     summarize_demo_architecture,
 )
-from backend.app.v1.core.middlewares.safety import SafetyGateMiddleware
+from app.v1.core.middlewares.safety import SafetyGateMiddleware
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

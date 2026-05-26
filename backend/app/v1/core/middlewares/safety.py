@@ -1,5 +1,4 @@
 from typing import List
-import pluggy
 from langchain.agents.middleware import (
     AgentMiddleware,
     AgentState,
@@ -17,7 +16,6 @@ import json
 import re
 
 from langchain_core.runnables import RunnableConfig
-hookimpl = pluggy.HookimplMarker("jade")
 
 # 1. ADD THE HELPER FUNCTION HERE
 def _last_user_text(state: AgentState) -> str:
