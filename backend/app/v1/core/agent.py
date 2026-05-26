@@ -5,9 +5,9 @@ import logging
 from copilotkit import CopilotKitMiddleware
 from deepagents import create_deep_agent
 
-from app.checkpointer import AsyncCheckpointerBundle, create_postgres_checkpointer
-from app.config import get_settings
-from app.tools import (
+from backend.app.v1.utils.checkpointer import AsyncCheckpointerBundle, create_postgres_checkpointer
+from backend.app.core.config import get_settings
+from backend.app.v1.utils.tools import (
     add_demo_task,
     create_launch_checklist,
     list_demo_tasks,

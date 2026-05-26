@@ -10,9 +10,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from app.security import BearerAuthMiddleware
-from app.agent import build_agent, close_agent_resources
-from app.config import get_settings
+from backend.app.v1.utils.security import BearerAuthMiddleware
+from backend.app.core.agent import build_agent, close_agent_resources
+from backend.app.core.config import get_settings
 
 logging.basicConfig(level=logging.INFO)
 settings = get_settings()
@@ -42,6 +42,7 @@ def runtime_info_payload() -> dict[str, Any]:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     graph = await build_agent()
+    app.state.graph = graph
 
     add_langgraph_fastapi_endpoint(
         app=app,
