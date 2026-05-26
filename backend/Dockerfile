@@ -14,8 +14,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt pyproject.toml ./
-RUN uv pip install --system --no-cache -r requirements.txt
+COPY pyproject.toml ./
+
+RUN uv pip install --system --no-cache .
 
 COPY app ./app
 
