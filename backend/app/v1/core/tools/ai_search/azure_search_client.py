@@ -12,7 +12,7 @@ from typing import Any
 
 
 from app.v1.core.config import get_settings
-from .interfaces import SearchResult, AzureSearchConfig
+from app.v1.core.tools.ai_search.interfaces import SearchResult, AzureSearchConfig
 from app.v1.utils.retry import http_retry_async
 
 settings = get_settings()

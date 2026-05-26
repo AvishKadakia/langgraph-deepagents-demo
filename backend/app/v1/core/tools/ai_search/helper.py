@@ -5,7 +5,7 @@ from typing import Any
 from collections.abc import Mapping, Sequence
 from app.v1.core.tools.ai_search.interfaces import AISearchRequest, AISearchResponse
 from app.v1.utils.retry import http_retry_async
-from .interfaces import SearchResult
+from app.v1.core.tools.ai_search.interfaces import SearchResult
 
 _INDEX_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 
@@ -29,10 +29,7 @@ def _authorize_index(index_name: str, request_allowed: frozenset[str]) -> str:
             raise ValueError("index_name is not authorized for this request")
         return validated
 
-def _split_csv(value: str | None) -> tuple[str, ...]:
-    if not value:
-        return ()
-    return tuple(part.strip() for part in value.split(",") if part.strip())
+
 
 def _get_remote_http_client(request) -> httpx.AsyncClient:
         if request._remote_http_client is None:

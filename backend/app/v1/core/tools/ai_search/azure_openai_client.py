@@ -12,7 +12,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from .interfaces import AzureOpenAIConfig
+from app.v1.core.tools.ai_search.interfaces import AzureOpenAIConfig
 from app.v1.core.config import get_settings
 from app.v1.utils.retry import http_retry_async
 
@@ -29,6 +29,7 @@ try:  # pragma: no cover - optional cloud dependency.
 except Exception:  # pragma: no cover
     DefaultAzureCredential = None  # type: ignore[assignment,misc]
     get_bearer_token_provider = None  # type: ignore[assignment]
+
 
 
 class AzureOpenAIClient:
@@ -187,7 +188,7 @@ class AzureOpenAIClient:
                 self._credential = DefaultAzureCredential()
                 kwargs["azure_ad_token_provider"] = get_bearer_token_provider(
                     self._credential,
-                    settings._azure_openai_scope,
+                    settings.azure_openai_scope,
                 )
             else:
                 raise RuntimeError("Azure OpenAI requires an API key or Managed Identity")

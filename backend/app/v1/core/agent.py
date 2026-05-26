@@ -12,6 +12,7 @@ from app.v1.core.tools import (
     create_launch_checklist,
     list_demo_tasks,
     summarize_demo_architecture,
+    ai_search_tool,
 )
 from app.v1.core.middlewares.safety import SafetyGateMiddleware
 
@@ -45,6 +46,7 @@ async def build_agent():
             create_launch_checklist,
             add_demo_task,
             list_demo_tasks,
+            ai_search_tool
         ],
         middleware=[CopilotKitMiddleware(), SafetyGateMiddleware()],
         system_prompt=SYSTEM_PROMPT,

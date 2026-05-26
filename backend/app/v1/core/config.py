@@ -1,8 +1,9 @@
 from functools import lru_cache
 import json
-
-from pydantic import Field
+import os
+from pydantic import Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from app.v1.utils.helper import _split_csv
  
 class Settings(BaseSettings):
     """Runtime configuration for the demo backend.
@@ -47,10 +48,20 @@ class Settings(BaseSettings):
     compose_chars_per_result: int = 2000
     compose_total_char_budget: int = 16000
 
+    #TODO fix authorization mechanism - this is currently just a comma-separated list of allowed index names, but in a real application you'd want something more robust
+    authorized_index_names: frozenset[str] = _split_csv(
+        os.getenv("AI_SEARCH_ALLOWED_INDEXES")
+        or os.getenv("AZURE_SEARCH_ALLOWED_INDEXES")
+        or os.getenv("AZURE_AI_SEARCH_ALLOWED_INDEXES")
+    )
+
     #Azure Openai Config
     endpoint: str | None = Field(
         default=None,
-        alias="AZURE_OPENAI_ENDPOINT",
+        validation_alias=AliasChoices(
+        "AZURE_OPENAI_ENDPOINT",
+        "API_ENDPOINT",
+        ),
         agent_description="The base URL for the Azure OpenAI resource, e.g., https://my-resource.openai.azure.com/",
     )
     api_key: str | None = Field(
@@ -65,18 +76,18 @@ class Settings(BaseSettings):
     )
     embedding_deployment: str | None = Field(
         default=None,
-        alias=(
-            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
-            or "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT"
-            or "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
+        validation_alias=AliasChoices(
+            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+            "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT",
+            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
         ),
         agent_description="The deployment name for the embedding model.",
     )
     chat_deployment: str | None = Field(
         default=None,
-        alias=(
-            "AZURE_OPENAI_CHAT_DEPLOYMENT"
-            or "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
+        validation_alias=AliasChoices(
+            "AZURE_OPENAI_CHAT_DEPLOYMENT",
+            "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
         ),
         agent_description="The deployment name for the chat model.",
     )
@@ -95,7 +106,7 @@ class Settings(BaseSettings):
         alias="AZURE_OPENAI_FALLBACK_DIMENSIONS",
         agent_description="The dimensions for fallback embeddings.",
     )
-    _azure_openai_scope = Field(
+    azure_openai_scope: str = Field(
         default="https://cognitiveservices.azure.com/.default",
         alias="AZURE_OPENAI_SCOPE",
         agent_description="The scope to use for Azure OpenAI authentication. Typically, this should not need to be changed unless you have a custom Azure setup.",
@@ -158,7 +169,7 @@ class Settings(BaseSettings):
         agent_description="Whether to enable fallback for Azure Search requests.",
     )
     azure_search_select_fields: tuple[str, ...] = Field(
-        default=tuple(
+        default=(
         "id",
         "chunk_id",
         "title",

@@ -2,23 +2,17 @@ from typing import Any
 import os
 from dataclasses import dataclass, field, asdict
 from app.v1.core.config import get_settings
-from .azure_openai_client import AzureOpenAIClient
-from .azure_search_client import AzureSearchClient
+from app.v1.core.tools.ai_search.azure_openai_client import AzureOpenAIClient
+from app.v1.core.tools.ai_search.azure_search_client import AzureSearchClient
 
 import httpx
-
-from .helper import _split_csv
 settings = get_settings()
 
 @dataclass(frozen=True)
 class AISearchRequest:
     query: str
     index_name: str
-    authorized_index_names: frozenset[str] = _split_csv(
-            os.getenv("AI_SEARCH_ALLOWED_INDEXES")
-            or os.getenv("AZURE_SEARCH_ALLOWED_INDEXES")
-            or os.getenv("AZURE_AI_SEARCH_ALLOWED_INDEXES")
-        )
+    authorized_index_names: frozenset[str] = settings.authorized_index_names
     top_k: int | None = settings.ai_search_default_top_k
     filter_expression: str | None = settings.filter_expression
     context: str | None = settings.context
@@ -33,8 +27,6 @@ class AISearchRequest:
     _remote_http_client: httpx.AsyncClient | None = None
     openai_client: AzureOpenAIClient | None = None
     search_client: AzureSearchClient | None = None
-
-
 
 @dataclass(frozen=True)
 class AISearchResponse:
