@@ -1,9 +1,12 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 import os
 from dataclasses import dataclass, field, asdict
 from app.v1.core.config import get_settings
-from app.v1.core.tools.ai_search.azure_openai_client import AzureOpenAIClient
-from app.v1.core.tools.ai_search.azure_search_client import AzureSearchClient
+if TYPE_CHECKING:
+    from app.v1.core.tools.ai_search.azure_openai_client import AzureOpenAIClient
+    from app.v1.core.tools.ai_search.azure_search_client import AzureSearchClient
 
 import httpx
 settings = get_settings()
@@ -25,8 +28,8 @@ class AISearchRequest:
     compose_chars_per_result: int = settings.compose_chars_per_result
     compose_total_char_budget: int = settings.compose_total_char_budget
     _remote_http_client: httpx.AsyncClient | None = None
-    openai_client: AzureOpenAIClient | None = None
-    search_client: AzureSearchClient | None = None
+    openai_client: "AzureOpenAIClient | None" = None
+    search_client: "AzureSearchClient | None" = None
 
 @dataclass(frozen=True)
 class AISearchResponse:
