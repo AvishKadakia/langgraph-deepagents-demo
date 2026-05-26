@@ -23,13 +23,12 @@ settings = get_settings()
 _checkpointer_bundle: AsyncCheckpointerBundle | None = None
 
 def build_azure_chat_model() -> AzureChatOpenAI:
-
+    logger.info("Building AzureChatOpenAI model with endpoint: %s, deployment: %s, api_version: %s", settings.endpoint, settings.chat_deployment, settings.api_version)
     return AzureChatOpenAI(
         azure_endpoint=settings.endpoint,
         api_key=settings.api_key,
         azure_deployment=settings.chat_deployment,
         api_version=settings.api_version,
-        temperature=0,
     )
 
 SYSTEM_PROMPT = """
