@@ -30,8 +30,6 @@ class Settings(BaseSettings):
         default="postgresql://postgres:postgres@localhost:5432/deepagent?sslmode=disable",
         alias="DATABASE_URL",
     )
-    openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY", description="The API key for authenticating with OpenAI. Required if OPENAI_MODEL is set.")
-    openai_model: str = Field(default="openai:gpt-5.4-mini", alias="OPENAI_MODEL", description="The model to use for OpenAI API requests.")
     cors_origins: str = Field(
         default="http://localhost:5173,http://127.0.0.1:5173",
         alias="CORS_ORIGINS",
