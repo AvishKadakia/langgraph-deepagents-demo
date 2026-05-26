@@ -70,7 +70,7 @@ class Settings(BaseSettings):
         agent_description="The API key for authenticating with Azure OpenAI. Required if API_ENDPOINT is set.",
     )
     api_version: str = Field(
-        default="2024-02-01",
+        default="2026-05-05",
         alias="AZURE_OPENAI_API_VERSION",
         agent_description="The API version to use for Azure OpenAI requests.",
     )
@@ -84,13 +84,14 @@ class Settings(BaseSettings):
         agent_description="The deployment name for the embedding model.",
     )
     chat_deployment: str | None = Field(
-        default=None,
+        default="gpt-chat-latest",
         validation_alias=AliasChoices(
             "AZURE_OPENAI_CHAT_DEPLOYMENT",
             "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
         ),
         agent_description="The deployment name for the chat model.",
     )
+    
     use_managed_identity: bool = Field(
         default=True,
         alias="AZURE_OPENAI_USE_MANAGED_IDENTITY",
