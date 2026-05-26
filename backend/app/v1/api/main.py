@@ -11,10 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from backend.app.v1.utils.security import BearerAuthMiddleware
-from backend.app.core.agent import build_agent, close_agent_resources
-from backend.app.core.config import get_settings
+from backend.app.v1.core import build_agent, close_agent_resources, get_settings
+from backend.app.v1.utils.logging import LOGGING_CONFIG
+logging.config.dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.INFO)
 settings = get_settings()
 
 

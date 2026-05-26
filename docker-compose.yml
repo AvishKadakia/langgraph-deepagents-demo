@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.v1.api.main:app --host 0.0.0.0 --port 8000
 
   runtime:
     build:
