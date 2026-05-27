@@ -30,6 +30,7 @@ dependencies = [
   "redis>=5.0.0",
   "structlog>=24.1.0",
   "tenacity>=8.5.0",
+  "ag-ui-protocol>=0.1.18",
 ]
 
 [tool.ruff]

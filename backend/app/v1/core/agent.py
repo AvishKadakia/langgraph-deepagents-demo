@@ -9,12 +9,10 @@ from langchain_openai import AzureChatOpenAI
 from app.v1.utils.checkpointer import AsyncCheckpointerBundle, create_postgres_checkpointer
 from app.v1.core.config import get_settings
 from app.v1.core.tools import (
-    add_demo_task,
-    create_launch_checklist,
-    list_demo_tasks,
-    summarize_demo_architecture,
+
     ai_search_tool,
 )
+from app.v1.core.subagents import SERVICENOW_SUBAGENT, close_servicenow_resources
 from app.v1.core.middlewares.safety import SafetyGateMiddleware
 
 logger = logging.getLogger(__name__)
@@ -32,8 +30,11 @@ def build_azure_chat_model() -> AzureChatOpenAI:
     )
 
 SYSTEM_PROMPT = """
-You are a helpful agent 
+You are a helpful agent.
 
+You coordinate user requests and delegate ServiceNow ticket work to the
+servicenow-ticket-agent subagent. Do not answer ServiceNow ticket questions
+from memory; delegate them.
 """.strip()
 
 
@@ -45,13 +46,15 @@ async def build_agent():
     return create_deep_agent(
         model=build_azure_chat_model(),
         tools=[
-            summarize_demo_architecture,
-            create_launch_checklist,
-            add_demo_task,
-            list_demo_tasks,
-            ai_search_tool
+            ai_search_tool,
         ],
-        middleware=[CopilotKitMiddleware(), SafetyGateMiddleware()],
+        subagents=[
+            SERVICENOW_SUBAGENT,
+        ],
+        middleware=[
+            CopilotKitMiddleware(),
+            SafetyGateMiddleware(),
+        ],
         system_prompt=SYSTEM_PROMPT,
         checkpointer=_checkpointer_bundle.saver,
     )
@@ -60,3 +63,5 @@ async def build_agent():
 async def close_agent_resources() -> None:
     if _checkpointer_bundle is not None:
         await _checkpointer_bundle.close()
+
+    await close_servicenow_resources()

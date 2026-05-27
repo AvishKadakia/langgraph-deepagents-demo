@@ -1,10 +1,18 @@
+
+from __future__ import annotations
 from functools import lru_cache
 import json
 import os
+from typing import Annotated
 from pydantic import Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from app.v1.utils.helper import _split_csv
- 
+from pydantic import (
+    AnyHttpUrl,
+    BeforeValidator
+)
+StringList = Annotated[list[str], BeforeValidator(_split_csv)]
+
 class Settings(BaseSettings):
     """Runtime configuration for the demo backend.
 
@@ -34,7 +42,23 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         alias="CORS_ORIGINS",
     )
+    #Entra auth config
+    entra_tenant_id: str | None = Field(default=None, alias="ENTRA_TENANT_ID")
+    entra_client_id: str | None = Field(default=None, alias="ENTRA_CLIENT_ID")
+    entra_audience: str | None = Field(default=None, alias="ENTRA_AUDIENCE")
+    entra_issuer: AnyHttpUrl | None = Field(default=None, alias="ENTRA_ISSUER")
+    entra_jwks_url: AnyHttpUrl | None = Field(default=None, alias="ENTRA_JWKS_URL")
+    entra_required_scopes: StringList = Field(default_factory=list, alias="ENTRA_REQUIRED_SCOPES")
+    entra_group_claim: str = Field(default="groups", alias="ENTRA_GROUP_CLAIM")
 
+    tenant_group_index_mapping: dict[str, str] = Field(
+        default_factory=dict,
+        alias="TENANT_GROUP_INDEX_MAPPING",
+        description=(
+            "JSON object mapping Entra group IDs or names to Azure AI Search index names, "
+            'for example: {"group-id": "search-index"}'
+        ),
+    )
     #Search Configs
     ai_search_default_top_k: int = 15
     filter_expression: str | None = None
