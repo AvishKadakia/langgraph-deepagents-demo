@@ -1,19 +1,127 @@
+"""LangChain tools for the mock ServiceNow ticket helper.
+
+These tools expose a small, stable surface area for a ServiceNow-focused
+subagent:
+- get a compact ticket summary
+- get full ticket details
+- list tickets, optionally filtered by status
+
+The backend remains the existing MockServiceNowClient so the demo stays local
+and deterministic unless that client is later extended.
+"""
+
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Annotated
+from collections.abc import Iterable, Mapping
+from typing import Annotated, Any
 
 from langchain_core.tools import tool
 from pydantic import Field
 
-from app.v1.clients.mock_servicenow import MockServiceNowError, TicketNotFoundError
+from app.v1.clients.mock_servicenow import (
+    MockServiceNowClient,
+    MockServiceNowError,
+    TicketNotFoundError,
+    normalize_status,
+    normalize_status_filters,
+    resolve_ticket_limit,
+    validate_ticket_number,
+)
 
-def _error_payload(exc: Exception) -> dict:
+SOURCE = "mock_servicenow"
+
+_servicenow_client: MockServiceNowClient | None = None
+
+
+def get_servicenow_client() -> MockServiceNowClient:
+    """Return the shared mock ServiceNow client for this process."""
+
+    global _servicenow_client
+
+    if _servicenow_client is None:
+        # Use the deterministic local fixture client. This avoids depending on
+        # env-only remote configuration for the demo tools.
+        _servicenow_client = MockServiceNowClient()
+
+    return _servicenow_client
+
+
+def _error_payload(exc: Exception) -> dict[str, Any]:
     return {
         "ok": False,
-        "source": "mock_servicenow",
+        "source": SOURCE,
         "kind": "servicenow_error",
         "error": str(exc),
+    }
+
+
+def _ticket_base(raw_ticket: Mapping[str, Any]) -> dict[str, Any]:
+    ticket_number = validate_ticket_number(str(raw_ticket.get("number", "")))
+
+    return {
+        "ticket_number": ticket_number,
+        "short_description": str(raw_ticket.get("short_description", "")),
+        "status": normalize_status(str(raw_ticket.get("state", ""))),
+        "priority": str(raw_ticket.get("priority", "")),
+        "assignment_group": str(raw_ticket.get("assignment_group", "")),
+        "updated_at": raw_ticket.get("updated_at"),
+    }
+
+
+def normalize_ticket_summary(raw_ticket: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize a raw mock ticket payload for compact summaries."""
+
+    return {
+        "ok": True,
+        "source": SOURCE,
+        "kind": "ticket_summary",
+        "ticket": _ticket_base(raw_ticket),
+    }
+
+
+def normalize_ticket_detail(raw_ticket: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize a raw mock ticket payload for full ticket details."""
+
+    ticket = _ticket_base(raw_ticket)
+    ticket.update(
+        {
+            "description": str(raw_ticket.get("description", "")),
+            "requested_by": str(raw_ticket.get("requested_by", "")),
+            "opened_at": raw_ticket.get("opened_at"),
+            "comments": [str(comment) for comment in raw_ticket.get("comments", [])],
+            "resolution_notes": raw_ticket.get("resolution_notes"),
+        }
+    )
+
+    return {
+        "ok": True,
+        "source": SOURCE,
+        "kind": "ticket_detail",
+        "ticket": ticket,
+    }
+
+
+def normalize_ticket_list(
+    raw_tickets: Iterable[Mapping[str, Any]],
+    *,
+    statuses: str | Iterable[str] | None = None,
+    limit: int | None = None,
+    count: int | None = None,
+) -> dict[str, Any]:
+    """Normalize raw mock ticket list results with validated filter metadata."""
+
+    normalized_statuses = normalize_status_filters(statuses)
+    normalized_limit = resolve_ticket_limit(limit=limit, count=count)
+    tickets = [_ticket_base(ticket) for ticket in raw_tickets]
+
+    return {
+        "ok": True,
+        "source": SOURCE,
+        "kind": "ticket_list",
+        "count": len(tickets),
+        "limit": normalized_limit,
+        "status_filter": list(normalized_statuses or []),
+        "tickets": tickets,
     }
 
 
@@ -21,14 +129,18 @@ def _error_payload(exc: Exception) -> dict:
 async def servicenow_get_ticket_summary(
     ticket_number: Annotated[
         str,
-        Field(description="ServiceNow ticket number, e.g. INC0001001, REQ0001003, CHG0001004."),
+        Field(
+            description=(
+                "ServiceNow ticket number, e.g. INC0001001, REQ0001003, CHG0001004."
+            )
+        ),
     ],
-) -> dict:
+) -> dict[str, Any]:
     """Get a compact normalized summary for one ServiceNow ticket."""
-    
+
     try:
         normalized_number = validate_ticket_number(ticket_number)
-        raw_ticket = await get_ticket_summary(normalized_number)
+        raw_ticket = await get_servicenow_client().get_ticket_summary(normalized_number)
         return normalize_ticket_summary(raw_ticket)
     except (MockServiceNowError, TicketNotFoundError) as exc:
         return _error_payload(exc)
@@ -38,13 +150,18 @@ async def servicenow_get_ticket_summary(
 async def servicenow_get_ticket_detail(
     ticket_number: Annotated[
         str,
-        Field(description="ServiceNow ticket number, e.g. INC0001001, REQ0001003, CHG0001004."),
+        Field(
+            description=(
+                "ServiceNow ticket number, e.g. INC0001001, REQ0001003, CHG0001004."
+            )
+        ),
     ],
-) -> dict:
-    """Get full normalized details for one ServiceNow ticket, including description, comments, requester, and resolution notes."""
+) -> dict[str, Any]:
+    """Get full normalized details for one ServiceNow ticket."""
+
     try:
         normalized_number = validate_ticket_number(ticket_number)
-        raw_ticket = await get_ticket(normalized_number)
+        raw_ticket = await get_servicenow_client().get_ticket(normalized_number)
         return normalize_ticket_detail(raw_ticket)
     except (MockServiceNowError, TicketNotFoundError) as exc:
         return _error_payload(exc)
@@ -56,22 +173,32 @@ async def servicenow_list_tickets(
         str | None,
         Field(
             description=(
-                "Optional comma-separated status filters. "
-                "Supported: new, open, in_progress, on_hold, resolved, closed, canceled. "
+                "Optional comma-separated status filters. Supported values: "
+                "new, open, in_progress, on_hold, resolved, closed, canceled. "
                 "Aliases like 'in progress' and 'on hold' are accepted."
             )
         ),
     ] = None,
     limit: Annotated[
         int | None,
-        Field(description="Maximum tickets to return. Defaults to the backend default and must not exceed the backend max."),
+        Field(
+            description=(
+                "Maximum tickets to return. Defaults to the backend default and "
+                "must not exceed the backend max."
+            )
+        ),
     ] = None,
-) -> dict:
+    count: Annotated[
+        int | None,
+        Field(description="Alias for limit. Do not pass both unless they match."),
+    ] = None,
+) -> dict[str, Any]:
     """List normalized ServiceNow tickets, optionally filtered by status."""
+
     try:
         normalized_statuses = normalize_status_filters(statuses)
         normalized_limit = resolve_ticket_limit(limit=limit, count=count)
-        raw_tickets = await self.client.list_tickets(
+        raw_tickets = await get_servicenow_client().list_tickets(
             statuses=normalized_statuses,
             limit=normalized_limit,
         )
@@ -92,8 +219,21 @@ SERVICENOW_TOOLS = [
 
 
 async def close_servicenow_resources() -> None:
-    global _servicenow_agent
+    global _servicenow_client
 
-    if _servicenow_agent is not None:
-        await _servicenow_agent.aclose()
-        _servicenow_agent = None
+    if _servicenow_client is not None:
+        await _servicenow_client.aclose()
+        _servicenow_client = None
+
+
+__all__ = [
+    "SERVICENOW_TOOLS",
+    "close_servicenow_resources",
+    "get_servicenow_client",
+    "normalize_ticket_detail",
+    "normalize_ticket_list",
+    "normalize_ticket_summary",
+    "servicenow_get_ticket_detail",
+    "servicenow_get_ticket_summary",
+    "servicenow_list_tickets",
+]
