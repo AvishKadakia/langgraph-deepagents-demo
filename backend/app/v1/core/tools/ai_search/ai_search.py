@@ -7,10 +7,6 @@ from azure.search.documents.models import VectorizedQuery
 
 from langchain_core.tools import tool
 from langchain_openai import AzureOpenAIEmbeddings
-from langchain_azure_ai.chat_models import AzureAIOpenAIApiChatModel
-from azure.identity import DefaultAzureCredential
-
-from deepagents import create_deep_agent
 
 from app.v1.core.config import get_settings
 
