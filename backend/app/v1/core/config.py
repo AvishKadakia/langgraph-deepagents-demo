@@ -42,6 +42,7 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         alias="CORS_ORIGINS",
     )
+    agent_max_steps: int = Field(default=15, alias="AGENT_MAX_STEPS")
     #Entra auth config
     entra_tenant_id: str | None = Field(default=None, alias="ENTRA_TENANT_ID")
     entra_client_id: str | None = Field(default=None, alias="ENTRA_CLIENT_ID")
