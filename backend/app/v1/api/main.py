@@ -128,21 +128,3 @@ def health() -> dict[str, str]:
 @app.api_route("/copilotkit/info", methods=["GET", "POST", "OPTIONS"])
 async def copilotkit_runtime_info() -> dict[str, Any]:
     return runtime_info_payload()
-
-# from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-# from langchain_openai import ChatOpenAI
-
-# token_provider = get_bearer_token_provider(
-#     DefaultAzureCredential(),
-#     "https://cognitiveservices.azure.com/.default",
-# )
-
-# llm = ChatOpenAI(
-#     model="gpt-chat-latest",  # your Azure deployment name
-#     base_url="https://test-project-ak-resource.openai.azure.com/openai/v1/",
-#     api_key=token_provider,  # callable that handles token refresh
-#     use_responses_api= True
-# )
-
-# response = llm.invoke("Hello, how are you?")
-# print(response.text)

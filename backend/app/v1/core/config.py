@@ -61,21 +61,39 @@ class Settings(BaseSettings):
         ),
     )
     #Search Configs
-    ai_search_default_top_k: int = 15
-    filter_expression: str | None = None
-    context: str | None = None
-    access_token: str | None = None
-    use_semantic: bool = True
-    use_vector: bool = True
-    use_hybrid: bool = True
-    compose_chars_per_result: int = 2000
-    compose_total_char_budget: int = 16000
-
-    #TODO fix authorization mechanism - this is currently just a comma-separated list of allowed index names, but in a real application you'd want something more robust
-    authorized_index_names: frozenset[str] = _split_csv(
-        os.getenv("AI_SEARCH_ALLOWED_INDEXES")
-        or os.getenv("AZURE_SEARCH_ALLOWED_INDEXES")
-        or os.getenv("AZURE_AI_SEARCH_ALLOWED_INDEXES")
+    ai_search_default_top_k: int = 7
+    #Azure Search Config
+    azure_search_endpoint: str | None = Field(
+        default=None,
+        alias="AZURE_SEARCH_ENDPOINT",
+        agent_description="The endpoint URL for the Azure Search service, e.g., https://my-search.search.windows.net",
+    )
+    azure_search_api_key: str | None = Field(
+        default=None,
+        alias="AZURE_SEARCH_API_KEY",
+        agent_description="The API key for the Azure Search service."
+    )
+    azure_search_select_fields: tuple[str, ...] = Field(
+        default=(
+        "id",
+        "chunk_id",
+        "title",
+        "document_title",
+        "source",
+        "source_url",
+        "url",
+        "file_name",
+        "content",
+        "chunk",
+        "text",
+        "x_trace_id",
+        ),
+        alias="AZURE_SEARCH_SELECT_FIELDS",
+        agent_description=(
+            "A comma-separated list of fields to select in Azure Search queries. "
+            "Defaults to 'id,title,content' which should be sufficient for most use cases. "
+            "You can add additional fields if your index contains useful metadata you want included in search results."
+        ),
     )
 
     #Azure Openai Config
@@ -136,84 +154,7 @@ class Settings(BaseSettings):
         agent_description="The scope to use for Azure OpenAI authentication. Typically, this should not need to be changed unless you have a custom Azure setup.",
     )
 
-    #Azure Search Config
-    azure_search_endpoint: str | None = Field(
-        default=None,
-        alias="AZURE_SEARCH_ENDPOINT",
-        agent_description="The endpoint URL for the Azure Search service, e.g., https://my-search.search.windows.net",
-    )
-    azure_search_api_key: str | None = Field(
-        default=None,
-        alias="AZURE_SEARCH_API_KEY",
-        agent_description="The API key for the Azure Search service."
-    )
-    azure_search_semantic_configuration: str | None = Field(
-        default=None,
-        alias="AZURE_SEARCH_SEMANTIC_CONFIGURATION",
-        agent_description="The name of the semantic configuration to use for Azure Search queries.",
-    )
-    azure_search_vector_field: str = Field(
-        default="content_vector",
-        alias="AZURE_SEARCH_VECTOR_FIELD",
-        agent_description="The name of the vector field in Azure Search indexes.",
-    )
-    azure_search_content_field: str = Field(
-        default="content",
-        alias="AZURE_SEARCH_CONTENT_FIELD",
-        agent_description="The name of the content field in Azure Search indexes.",
-    )
-    azure_search_title_field: str = Field(
-        default="title",
-        alias="AZURE_SEARCH_TITLE_FIELD",
-        agent_description="The name of the title field in Azure Search indexes.",
-    )
-    azure_search_id_field: str = Field(
-        default="id",
-        alias="AZURE_SEARCH_ID_FIELD",
-        agent_description="The name of the ID field in Azure Search indexes.",
-    )
-    azure_search_default_top_k: int = Field(
-        default=5,
-        alias="AZURE_SEARCH_TOP_K",
-        agent_description="The default number of search results to return for Azure Search queries.",
-    )
-    azure_search_request_timeout_seconds: float = Field(
-        default=20.0,
-        alias="AZURE_SEARCH_TIMEOUT_SECONDS",
-        agent_description="The timeout in seconds for Azure Search requests.",
-    )
-    azure_search_use_managed_identity: bool = Field(
-        default=True,
-        alias="AZURE_SEARCH_USE_MANAGED_IDENTITY",
-        agent_description="Whether to use managed identity for Azure Search authentication.",
-    )
-    azure_search_fallback_enabled: bool = Field(
-        default=True,
-        alias="AZURE_SEARCH_FALLBACK_ENABLED",
-        agent_description="Whether to enable fallback for Azure Search requests.",
-    )
-    azure_search_select_fields: tuple[str, ...] = Field(
-        default=(
-        "id",
-        "chunk_id",
-        "title",
-        "document_title",
-        "source",
-        "source_url",
-        "url",
-        "file_name",
-        "content",
-        "chunk",
-        "text",
-        "x_trace_id",
-        ),
-        alias="AZURE_SEARCH_SELECT_FIELDS",
-        agent_description=(
-            "A comma-separated list of fields to select in Azure Search queries. "
-            "Defaults to 'id,title,content' which should be sufficient for most use cases. "
-            "You can add additional fields if your index contains useful metadata you want included in search results."
-        ),
-    )
+    
     
 
 

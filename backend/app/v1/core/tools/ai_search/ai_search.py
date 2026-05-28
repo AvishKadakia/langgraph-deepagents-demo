@@ -15,42 +15,38 @@ from deepagents import create_deep_agent
 from app.v1.core.config import get_settings
 
 settings = get_settings()
-# --- Azure AI Search client ---
-search_client = SearchClient(
-endpoint=os.environ["AZURE_SEARCH_ENDPOINT"],
-index_name=os.environ["AZURE_SEARCH_INDEX_NAME"],
-credential=AzureKeyCredential(os.environ["AZURE_SEARCH_API_KEY"]),
-)
+
 
 # --- Embeddings: must match the model/dimensions used to populate your index ---
 embeddings = AzureOpenAIEmbeddings(
-model=os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-large"),
-azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-api_key=os.environ["AZURE_OPENAI_API_KEY"],
-openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-01"),
+model=settings.embedding_deployment,
+azure_endpoint=settings.endpoint,
+api_key=settings.api_key,
+openai_api_version=settings.api_version,
 )
 
 
 @tool("ai_search_tool")
-async def ai_search_tool(query: str, top_k: int = 5) -> str:
+async def ai_search_tool(query: str,index_name: str, top_k: int = settings.ai_search_default_top_k) -> str:
     """Search the company knowledge base and return cited passages."""
-
+    # --- Azure AI Search client ---
+    search_client = SearchClient(
+    endpoint=settings.azure_search_endpoint,
+    index_name=index_name,
+    credential=AzureKeyCredential(settings.azure_search_api_key),
+    )
     query_vector = embeddings.embed_query(query)
 
     vector_query = VectorizedQuery(
     vector=query_vector,
     k_nearest_neighbors=top_k,
-    fields=os.environ.get("AZURE_SEARCH_VECTOR_FIELD", "content_vector"),
+    fields=settings.azure_search_select_fields,  # Ensure this matches the fields in your index
     )
 
     results = search_client.search(
     search_text=query, # makes this hybrid: keyword + vector
     vector_queries=[vector_query],
-    select=[
-    "title",
-    "content",
-    "url",
-    ],
+    select=settings.azure_search_select_fields,
     top=top_k,
     )
 
