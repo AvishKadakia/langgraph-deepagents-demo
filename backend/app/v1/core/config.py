@@ -116,7 +116,7 @@ class Settings(BaseSettings):
         agent_description="The API version to use for Azure OpenAI requests.",
     )
     embedding_deployment: str | None = Field(
-        default=None,
+        default="text-embedding-3-large",
         validation_alias=AliasChoices(
             "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
             "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT",
