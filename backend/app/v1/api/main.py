@@ -85,7 +85,7 @@ async def langgraph_agent_endpoint(input_data: RunAgentInput, request: Request):
             name= settings.agent_name,
             description=settings.agent_description,
             graph=app.state.graph,
-            langgraph_config=config,
+            config=config,
     )
 
     async def event_generator():
