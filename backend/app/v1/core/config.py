@@ -144,7 +144,7 @@ class Settings(BaseSettings):
         agent_description="Whether to enable fallback for Azure OpenAI requests.",
     )
     fallback_dimensions: int = Field(
-        default=1536,
+        default=3072,
         alias="AZURE_OPENAI_FALLBACK_DIMENSIONS",
         agent_description="The dimensions for fallback embeddings.",
     )
@@ -152,6 +152,11 @@ class Settings(BaseSettings):
         default="https://cognitiveservices.azure.com/.default",
         alias="AZURE_OPENAI_SCOPE",
         agent_description="The scope to use for Azure OpenAI authentication. Typically, this should not need to be changed unless you have a custom Azure setup.",
+    )
+    azure_openai_embedding_version: str = Field(
+        default="1",
+        alias="AZURE_OPENAI_EMBEDDING_API_VERSION",
+         agent_description="The API version to use for Azure OpenAI embedding requests.",
     )
 
     

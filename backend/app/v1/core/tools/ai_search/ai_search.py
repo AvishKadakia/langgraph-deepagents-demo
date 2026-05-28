@@ -18,7 +18,7 @@ embeddings = AzureOpenAIEmbeddings(
 model=settings.embedding_deployment,
 azure_endpoint=settings.endpoint,
 api_key=settings.api_key,
-openai_api_version=settings.api_version,
+openai_api_version=settings.azure_openai_embedding_version
 )
 
 
