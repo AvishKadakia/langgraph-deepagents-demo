@@ -32,6 +32,7 @@ dependencies = [
   "tenacity>=8.5.0",
   "ag-ui-protocol>=0.1.18",
   "langchain-azure-ai>=1.2.3",
+  "langgraph-cli[inmem]>=0.4.27",
 ]
 
 [tool.ruff]

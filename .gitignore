@@ -17,13 +17,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
+uv.lock
 # Environment variables
 .env
 .env.*
 !.env.example
 !.env.sample
-
+.langgraph_*
 # TypeScript / Vite
 *.tsbuildinfo
 vite.config.*.timestamp-*
