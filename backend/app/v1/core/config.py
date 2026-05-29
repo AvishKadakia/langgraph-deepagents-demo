@@ -73,6 +73,15 @@ class Settings(BaseSettings):
         alias="AZURE_SEARCH_API_KEY",
         agent_description="The API key for the Azure Search service."
     )
+    azure_ai_search_default_index: str = Field(
+        default="documents",
+        alias="AZURE_AI_SEARCH_DEFAULT_INDEX",
+        agent_description=(
+            "The default Azure Search index name to query if no index is specified. "
+            "This should match the name of the index you created and populated with your documents. "
+            "You can override this on a per-query basis if you have multiple indexes."
+        )
+    )
     azure_search_select_fields: tuple[str, ...] = Field(
         default=(
         "id",
@@ -144,7 +153,7 @@ class Settings(BaseSettings):
         agent_description="Whether to enable fallback for Azure OpenAI requests.",
     )
     fallback_dimensions: int = Field(
-        default=3072,
+        default=1536,
         alias="AZURE_OPENAI_FALLBACK_DIMENSIONS",
         agent_description="The dimensions for fallback embeddings.",
     )

@@ -23,12 +23,20 @@ openai_api_version=settings.azure_openai_embedding_version
 
 
 @tool("ai_search_tool")
-async def ai_search_tool(query: str,index_name: str, top_k: int = settings.ai_search_default_top_k) -> str:
-    """Search the company knowledge base and return cited passages."""
+async def ai_search_tool(query: str, top_k: int = settings.ai_search_default_top_k) -> str:
+    #TODO: add a doc stirng in goolge format for
+    """
+    Search the company knowledge base and return cited passages.
+    Args:
+         query (str): The search query.
+         top_k (int, optional): The number of top results to return. Defaults to settings.ai_search_default_top_k.
+    Returns:   
+         str: A formatted string containing the search results with cited passages.
+    """
     # --- Azure AI Search client ---
     search_client = SearchClient(
     endpoint=settings.azure_search_endpoint,
-    index_name=index_name,
+    index_name=settings.azure_ai_search_default_index,
     credential=AzureKeyCredential(settings.azure_search_api_key),
     )
     query_vector = embeddings.embed_query(query)
