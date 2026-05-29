@@ -42,7 +42,7 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         alias="CORS_ORIGINS",
     )
-    agent_max_steps: int = Field(default=15, alias="AGENT_MAX_STEPS")
+    agent_max_steps: int = Field(default=50, alias="AGENT_MAX_STEPS")
     #Entra auth config
     entra_tenant_id: str | None = Field(default=None, alias="ENTRA_TENANT_ID")
     entra_client_id: str | None = Field(default=None, alias="ENTRA_CLIENT_ID")
@@ -65,21 +65,39 @@ class Settings(BaseSettings):
     #Azure Search Config
     azure_search_endpoint: str | None = Field(
         default=None,
-        alias="AZURE_SEARCH_ENDPOINT",
+        validation_alias=AliasChoices(
+        "AZURE_AI_SEARCH_ENDPOINT",
+        "AZURE_SEARCH_ENDPOINT",
+        ),
         agent_description="The endpoint URL for the Azure Search service, e.g., https://my-search.search.windows.net",
     )
     azure_search_api_key: str | None = Field(
         default=None,
-        alias="AZURE_SEARCH_API_KEY",
+        validation_alias=AliasChoices(
+        "AZURE_AI_SEARCH_API_KEY",
+        "AZURE_SEARCH_API_KEY",
+        ),
         agent_description="The API key for the Azure Search service."
     )
     azure_ai_search_default_index: str = Field(
         default="documents",
-        alias="AZURE_AI_SEARCH_DEFAULT_INDEX",
+        validation_alias=AliasChoices(
+        "AZURE_AI_SEARCH_DEFAULT_INDEX",
+        "AZURE_SEARCH_DEFAULT_INDEX",
+        ),
         agent_description=(
             "The default Azure Search index name to query if no index is specified. "
             "This should match the name of the index you created and populated with your documents. "
             "You can override this on a per-query basis if you have multiple indexes."
+        )
+    )
+    #TODO fix
+    azure_vector_field_name: str = Field(
+        default="content_vector",
+        alias="AZURE_VECTOR_FIELD_NAME",
+        agent_description=(
+            "The name of the vector field in your Azure Search index. This should match the field you used to store the document embeddings. The default is 'content_vector', which is a common choice"
+            " but you may have named it differently when setting up your index."
         )
     )
     azure_search_select_fields: tuple[str, ...] = Field(
@@ -163,7 +181,7 @@ class Settings(BaseSettings):
         agent_description="The scope to use for Azure OpenAI authentication. Typically, this should not need to be changed unless you have a custom Azure setup.",
     )
     azure_openai_embedding_version: str = Field(
-        default="1",
+        default="2024-02-01",
         alias="AZURE_OPENAI_EMBEDDING_API_VERSION",
          agent_description="The API version to use for Azure OpenAI embedding requests.",
     )

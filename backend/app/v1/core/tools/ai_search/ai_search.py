@@ -30,7 +30,7 @@ async def ai_search_tool(query: str, top_k: int = settings.ai_search_default_top
     Args:
          query (str): The search query.
          top_k (int, optional): The number of top results to return. Defaults to settings.ai_search_default_top_k.
-    Returns:   
+    Returns:
          str: A formatted string containing the search results with cited passages.
     """
     # --- Azure AI Search client ---
@@ -44,7 +44,7 @@ async def ai_search_tool(query: str, top_k: int = settings.ai_search_default_top
     vector_query = VectorizedQuery(
     vector=query_vector,
     k_nearest_neighbors=top_k,
-    fields=settings.azure_search_select_fields,  # Ensure this matches the fields in your index
+    fields="content_vector",  # Ensure this matches the fields in your index
     )
 
     results = search_client.search(
