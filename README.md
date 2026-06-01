@@ -1,8 +1,13 @@
-#start
+# Start the CopilotKit demo
+
+```bash
+cp .env.example .env
 docker compose up --build
 
-#stop
-docker compose down -v
+```
 
-#Test Query
+# Open the app
+http://localhost:5173
+
+# Test Query
 Find all open serive now tickets and then search the knowledge base for any relevant documents

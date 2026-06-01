@@ -1,0 +1,7 @@
+{
+  "dependencies": ["./backend"],
+  "graphs": {
+    "deepagent-demo": "./app/v1/core/agent.py:build_agent"
+  },
+  "env": "./.env"
+}

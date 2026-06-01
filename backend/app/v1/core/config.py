@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     expects complex env values like list[str] to be JSON. A comma-separated value is
     friendlier for Docker Compose, so we parse it ourselves through cors_origin_list.
     """
-
+    postgress_url: str = Field(default="postgresql://postgres:postgres@localhost:5432/deepagent?sslmode=disable", alias="DATABASE_URL")
+    enable_postgres_checkpointer: bool = Field(default=False, alias="ENABLE_POSTGRES_CHECKPOINTER")
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     api_bearer_token: str = Field(
         default="dev-token-change-me",
@@ -60,6 +61,10 @@ class Settings(BaseSettings):
             'for example: {"group-id": "search-index"}'
         ),
     )
+    #Openai Config
+    ai_llm_default_top_p: int = 7
+    ai_llm_default_temperature: int = 0.1
+    ai_llm_default_tmax_token: int = 25000
     #Search Configs
     ai_search_default_top_k: int = 7
     #Azure Search Config

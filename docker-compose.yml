@@ -37,42 +37,5 @@ services:
       - ./backend:/app
     command: uvicorn app.v1.api.main:app --host 0.0.0.0 --port 8000
 
-  runtime:
-    build:
-      context: ./runtime
-    container_name: deepagent-runtime
-    env_file:
-      - .env
-    environment:
-      PORT: 4000
-      COPILOT_RUNTIME_PATH: /copilotkit
-      AGENT_ID: ${AGENT_ID:-deepagent-demo}
-      AGENT_URL: http://backend:8000/copilotkit
-      CORS_ORIGINS: ${RUNTIME_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
-    ports:
-      - "${RUNTIME_PORT:-4000}:4000"
-    depends_on:
-      - backend
-    volumes:
-      - ./runtime:/app
-      - /app/node_modules
-    command: npm run start
-
-  frontend:
-    build:
-      context: ./frontend
-    container_name: deepagent-frontend
-    environment:
-      VITE_COPILOT_RUNTIME_URL: http://localhost:${RUNTIME_PORT:-4000}/copilotkit
-      VITE_AGENT_ID: ${AGENT_ID:-deepagent-demo}
-    ports:
-      - "${FRONTEND_PORT:-5173}:5173"
-    depends_on:
-      - runtime
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev -- --host 0.0.0.0
-
 volumes:
   deepagent_pgdata:
